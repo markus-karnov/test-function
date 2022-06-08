@@ -65,9 +65,9 @@ jobs:
     - name: Publish
       shell: pwsh
       run: |
-      dotnet restore
-      dotnet build --configuration Release
-      dotnet publish -c Release -o './published-app'
+        dotnet restore
+        dotnet build --configuration Release
+        dotnet publish -c Release -o './published-app'
 
     - name: Store artifact
       uses: actions/upload-artifact@v3
