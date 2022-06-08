@@ -23,7 +23,7 @@ env:
   AZURE_FUNCTIONAPP_NAME: test-function-markus  # set this to your application's name
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'           # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6.0.x'                       # set this to the dotnet version to use
-
+  PROJECT_PATH: '.\TestOutboundIp\TestOutboundIp.csproj'
 on:
   push:
     branches:
@@ -59,13 +59,13 @@ jobs:
       run: |
         dotnet restore
         dotnet build --configuration Release
-        dotnet publish -c Release -o './published-app'
+        dotnet publish ${{ env.PROJECT_PATH }} -c Release -o './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
 
     - name: Store artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        path: './published-app'
+        path: './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
 
   job_CD:
     needs: job_CI
@@ -77,14 +77,14 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        path: './published-app'
+        path: './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
 
     - name: 'Run Azure Functions Action'
       uses: Azure/functions-action@v1
       id: fa
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: './published-app'
+        package: './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
     - name: 'Azure login'
