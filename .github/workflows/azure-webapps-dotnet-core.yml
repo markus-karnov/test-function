@@ -41,26 +41,18 @@ jobs:
     steps:
     - name: 'Checkout GitHub Action'
       uses: actions/checkout@master
-    - uses: Azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-    - uses: Azure/get-keyvault-secrets@v1
-      with: 
-        keyvault: "kv-test-markus"
-        secrets: 'TestSecret1, TestSecret2'
-      id: getKeyVaultSecrets
 
     - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 'Resolve Project Dependencies Using Dotnet'
-      shell: pwsh
-      run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        dotnet build --configuration Release --output ./output
-        popd
+#    - name: 'Resolve Project Dependencies Using Dotnet'
+#      shell: pwsh
+#      run: |
+#        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+#        dotnet build --configuration Release --output ./output
+#        popd
 
     - name: Publish
       shell: pwsh
@@ -73,46 +65,58 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        path: './test-function/published-app'
-
-  job_CD:
-    needs: job_CI
-    runs-on: windows-latest
-    environment: dev
-    steps: 
-
-    - name: Download artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         path: './published-app'
 
-    - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
-      id: fa
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: './published-app'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+  # job_CD:
+  #   needs: job_CI
+  #   runs-on: windows-latest
+  #   environment: dev
+  #   steps: 
 
-    - name: 'Set Functions Config'
-      uses: azure/appservice-settings@v1
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        app-settings-json: |
-         [
-             {
-                 "name": "TEST_CONFIG_1",
-                 "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret1 }}",
-                 "slotSetting": false
-             },
-             {
-                 "name": "TEST_CONFIG_2",
-                 "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret2 }}",
-                 "slotSetting": false
-             }
-         ]
+  #   - name: Download artifact
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+  #       path: './published-app'
+
+  #   - name: 'Azure login'
+  #     uses: Azure/login@v1
+  #     with:
+  #       creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #   - name: 'Azure keyvault'
+  #     uses: Azure/get-keyvault-secrets@v1
+  #     with: 
+  #       keyvault: "kv-test-markus"
+  #       secrets: 'TestSecret1, TestSecret2'
+  #     id: getKeyVaultSecrets
+
+  #   - name: 'Run Azure Functions Action'
+  #     uses: Azure/functions-action@v1
+  #     id: fa
+  #     with:
+  #       app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+  #       package: './published-app'
+  #       publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+  #   - name: 'Set Functions Config'
+  #     uses: azure/appservice-settings@v1
+  #     with:
+  #       app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+  #       app-settings-json: |
+  #        [
+  #            {
+  #                "name": "TEST_CONFIG_1",
+  #                "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret1 }}",
+  #                "slotSetting": false
+  #            },
+  #            {
+  #                "name": "TEST_CONFIG_2",
+  #                "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret2 }}",
+  #                "slotSetting": false
+  #            }
+  #        ]
         
-      id: settings
+  #     id: settings
 
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
