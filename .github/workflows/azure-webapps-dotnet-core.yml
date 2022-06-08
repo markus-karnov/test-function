@@ -64,23 +64,28 @@ jobs:
 
     - name: Publish
       shell: pwsh
-      run: dotnet publish
+      run: |
+      dotnet build --configuration Release
+      dotnet publish -c Release -o './published-app'
 
     - name: Store artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        path: /home/runner/work/test-function/test-function/bin/Debug/net6.0/publish/
+        path: './test-function/published-app'
 
   job_CD:
     needs: job_CI
     runs-on: windows-latest
     environment: dev
     steps:
+
     - name: Download artifact
       uses: actions/download-artifact@v3
       with:
         name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        path: './published-app'
+
     - name: 'Run Azure Functions Action'
       uses: Azure/functions-action@v1
       id: fa
@@ -88,6 +93,7 @@ jobs:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+        
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
