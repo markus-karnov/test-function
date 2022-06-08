@@ -65,6 +65,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: build-output
+        path: function-binaries
+
   job_CD:
     needs: job_CI
     runs-on: windows-latest
