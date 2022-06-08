@@ -61,11 +61,16 @@ jobs:
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         dotnet build --configuration Release --output ./output
         popd
+
+    - name: Publish
+      shell: pwsh
+      run: dotnet publish
+
     - name: Store artifact
       uses: actions/upload-artifact@v3
       with:
-        name: build-output
-        path: function-binaries
+        name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        path: /home/runner/work/test-function/test-function/bin/Debug/net6.0/publish/
 
   job_CD:
     needs: job_CI
@@ -75,8 +80,7 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v3
       with:
-        name: build-output
-        path: function-binaries
+        name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
     - name: 'Run Azure Functions Action'
       uses: Azure/functions-action@v1
       id: fa
