@@ -65,6 +65,7 @@ jobs:
     - name: Publish
       shell: pwsh
       run: |
+      dotnet restore
       dotnet build --configuration Release
       dotnet publish -c Release -o './published-app'
 
@@ -78,7 +79,7 @@ jobs:
     needs: job_CI
     runs-on: windows-latest
     environment: dev
-    steps:
+    steps: 
 
     - name: Download artifact
       uses: actions/download-artifact@v3
@@ -91,9 +92,9 @@ jobs:
       id: fa
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+        package: './published-app'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-        
+
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
