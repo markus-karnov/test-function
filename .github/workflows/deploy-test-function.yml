@@ -79,7 +79,7 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: $AZURE_FUNCTIONAPP_NAME
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: './output/${{ env.ARTIFACT_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
@@ -91,14 +91,14 @@ jobs:
     - name: 'Azure keyvault'
       uses: Azure/get-keyvault-secrets@v1
       with: 
-        keyvault: $AZURE_KEYVAULT
+        keyvault: ${{ env.AZURE_KEYVAULT }}
         secrets: 'TestSecret1, TestSecret2'
       id: getKeyVaultSecrets
 
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
-        app-name: $AZURE_FUNCTIONAPP_NAME 
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         app-settings-json: |
          [
              {
@@ -142,7 +142,7 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: $AZURE_FUNCTIONAPP_NAME
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: './output/${{ env.ARTIFACT_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
@@ -154,14 +154,14 @@ jobs:
     - name: 'Azure keyvault' 
       uses: Azure/get-keyvault-secrets@v1
       with: 
-        keyvault: $AZURE_KEYVAULT
+        keyvault: ${{ env.AZURE_KEYVAULT }}
         secrets: 'TestSecret1, TestSecret2'
       id: getKeyVaultSecrets
 
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
-        app-name: $AZURE_FUNCTIONAPP_NAME
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         app-settings-json: |
          [
              {
