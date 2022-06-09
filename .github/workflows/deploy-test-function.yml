@@ -21,7 +21,7 @@ name: Build and publish function TestOutboundIp
 
 env:
   AZURE_FUNCTIONAPP_NAME_DEV: test-function-markus  
-  AZURE_FUNCTIONAPP_NAME_PROD: test-function-markus  # should be different from dev!
+  AZURE_FUNCTIONAPP_NAME_PROD: test-function-markus  # should be different from dev
   
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'           # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6.0.x'                       # set this to the dotnet version to use
@@ -75,6 +75,11 @@ jobs:
     needs: job_CI
     runs-on: windows-latest
     environment: dev
+    if: github.ref != 'refs/heads/master'
+
+    env:
+      AZURE_KEYVAULT: "kv-test-markus"
+    
     steps: 
 
     - name: Download artifact
@@ -99,7 +104,7 @@ jobs:
     - name: 'Azure keyvault'
       uses: Azure/get-keyvault-secrets@v1
       with: 
-        keyvault: "kv-test-markus"
+        keyvault: $AZURE_KEYVAULT
         secrets: 'TestSecret1, TestSecret2'
       id: getKeyVaultSecrets
 
@@ -124,10 +129,13 @@ jobs:
       id: settings
 
   job_CD_prod:
-    needs: job_CD_dev
+    needs: job_CI
     runs-on: windows-latest
     environment: prod
-    if: github.ref == 'refs/heads/masterX'
+    if: github.ref == 'refs/heads/master'
+
+    env:
+      AZURE_KEYVAULT: "kv-test-markus" # should differ from dev 
 
     steps: 
 
@@ -150,10 +158,10 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: 'Azure keyvault'
+    - name: 'Azure keyvault' 
       uses: Azure/get-keyvault-secrets@v1
       with: 
-        keyvault: "kv-test-markus"
+        keyvault: $AZURE_KEYVAULT
         secrets: 'TestSecret1, TestSecret2'
       id: getKeyVaultSecrets
 
