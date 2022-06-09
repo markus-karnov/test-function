@@ -20,10 +20,13 @@
 name: Build and publish function TestOutboundIp
 
 env:
-  AZURE_FUNCTIONAPP_NAME: test-function-markus  # set this to your application's name
+  AZURE_FUNCTIONAPP_NAME_DEV: test-function-markus  
+  AZURE_FUNCTIONAPP_NAME_PROD: test-function-markus  # should be different from dev!
+  
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'           # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6.0.x'                       # set this to the dotnet version to use
   PROJECT_PATH: '.\TestOutboundIp\TestOutboundIp.csproj'
+  ARTIFACT_NAME: "test-function"
 on:
   push:
     branches:
@@ -59,15 +62,15 @@ jobs:
       run: |
         dotnet restore
         dotnet build --configuration Release
-        dotnet publish ${{ env.PROJECT_PATH }} -c Release -o './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
+        dotnet publish ${{ env.PROJECT_PATH }} -c Release -o './output/${{ env.ARTIFACT_NAME }}'
 
     - name: Store artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        path: './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
+        name: ${{ env.AZURE_ARTIFACT_NAME }}
+        path: './output/${{ env.ARTIFACT_NAME }}'
 
-  job_CD:
+  job_CD_dev:
     needs: job_CI
     runs-on: windows-latest
     environment: dev
@@ -76,15 +79,15 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v3
       with:
-        name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        path: './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
+        name: ${{ env.AZURE_ARTIFACT_NAME }}
+        path: './output/${{ env.ARTIFACT_NAME }}'
 
     - name: 'Run Azure Functions Action'
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: './output/${{ env.AZURE_FUNCTIONAPP_NAME }}'
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_DEV }}
+        package: './output/${{ env.ARTIFACT_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
     - name: 'Azure login'
@@ -102,7 +105,7 @@ jobs:
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_DEV }}
         app-settings-json: |
          [
              {
@@ -119,4 +122,54 @@ jobs:
         
       id: settings
 
-# For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
+job_CD_prod:
+    needs: job_CD_dev
+    runs-on: windows-latest
+    environment: prod
+    steps: 
+
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: './output/${{ env.ARTIFACT_NAME }}'
+
+    - name: 'Run Azure Functions Action'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_PROD }}
+        package: './output/${{ env.ARTIFACT_NAME }}'
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+    - name: 'Azure login'
+      uses: Azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: 'Azure keyvault'
+      uses: Azure/get-keyvault-secrets@v1
+      with: 
+        keyvault: "kv-test-markus"
+        secrets: 'TestSecret1, TestSecret2'
+      id: getKeyVaultSecrets
+
+    - name: 'Set Functions Config'
+      uses: azure/appservice-settings@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_PROD }}
+        app-settings-json: |
+         [
+             {
+                 "name": "TEST_CONFIG_1",
+                 "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret1 }}",
+                 "slotSetting": false
+             },
+             {
+                 "name": "TEST_CONFIG_2",
+                 "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret2 }}",
+                 "slotSetting": false
+             }
+         ]
+        
+      id: settings
