@@ -20,19 +20,12 @@
 name: Build and publish function TestOutboundIp
 
 env:
-  AZURE_FUNCTIONAPP_NAME_DEV: test-function-markus  
-  AZURE_FUNCTIONAPP_NAME_PROD: test-function-markus  # should be different from dev
-  
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'           # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6.0.x'                       # set this to the dotnet version to use
   PROJECT_PATH: '.\TestOutboundIp\TestOutboundIp.csproj'
   ARTIFACT_NAME: "test-function"
 on:
   push
-  #push:
-  #  branches:
-  #    - "master"
-  #    - '!master'
   #workflow_dispatch:
 
 permissions:
@@ -51,14 +44,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-
-#    - name: 'Resolve Project Dependencies Using Dotnet'
-#      shell: pwsh
-#      run: |
-#        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-#        dotnet build --configuration Release --output ./output
-#        popd
-
     - name: Publish
       shell: pwsh
       run: |
@@ -79,7 +64,8 @@ jobs:
     if: github.ref != 'refs/heads/master'
 
     env:
-      AZURE_KEYVAULT: "kv-test-markus"
+      AZURE_FUNCTIONAPP_NAME: test-function-markus  
+      AZURE_KEYVAULT: 'kv-test-markus'
     
     steps: 
 
@@ -93,7 +79,7 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_DEV }}
+        app-name: $AZURE_FUNCTIONAPP_NAME
         package: './output/${{ env.ARTIFACT_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
@@ -112,7 +98,7 @@ jobs:
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_DEV }}
+        app-name: $AZURE_FUNCTIONAPP_NAME 
         app-settings-json: |
          [
              {
@@ -123,6 +109,11 @@ jobs:
              {
                  "name": "TEST_CONFIG_2",
                  "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret2 }}",
+                 "slotSetting": false
+             },
+             {
+                 "name": "TEST_CONFIG_3",
+                 "value": "dev",
                  "slotSetting": false
              }
          ]
@@ -136,7 +127,8 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     env:
-      AZURE_KEYVAULT: "kv-test-markus" # should differ from dev 
+      AZURE_KEYVAULT: 'kv-test-markus' # should differ from dev 
+      AZURE_FUNCTIONAPP_NAME: test-function-markus  # should differ from dev 
 
     steps: 
 
@@ -150,7 +142,7 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_PROD }}
+        app-name: $AZURE_FUNCTIONAPP_NAME
         package: './output/${{ env.ARTIFACT_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
@@ -169,7 +161,7 @@ jobs:
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_PROD }}
+        app-name: $AZURE_FUNCTIONAPP_NAME
         app-settings-json: |
          [
              {
@@ -180,6 +172,11 @@ jobs:
              {
                  "name": "TEST_CONFIG_2",
                  "value": "${{ steps.getKeyVaultSecrets.outputs.TestSecret2 }}",
+                 "slotSetting": false
+             },
+             {
+                 "name": "TEST_CONFIG_3",
+                 "value": "prod",
                  "slotSetting": false
              }
          ]
