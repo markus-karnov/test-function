@@ -70,19 +70,6 @@ jobs:
         name: ${{ env.ARTIFACT_NAME }}
         path: './output/${{ env.ARTIFACT_NAME }}'
 
-    - name: 'Azure login'
-      uses: Azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: 'Azure keyvault'
-      uses: Azure/get-keyvault-secrets@v1
-      with: 
-        keyvault: "kv-test-markus"
-        secrets: 'TestSecret1, TestSecret2'
-      id: getKeyVaultSecrets
-
-
   job_CD_dev:
     needs: job_CI
     runs-on: windows-latest
@@ -102,6 +89,18 @@ jobs:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME_DEV }}
         package: './output/${{ env.ARTIFACT_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+    - name: 'Azure login'
+      uses: Azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: 'Azure keyvault'
+      uses: Azure/get-keyvault-secrets@v1
+      with: 
+        keyvault: "kv-test-markus"
+        secrets: 'TestSecret1, TestSecret2'
+      id: getKeyVaultSecrets
 
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
@@ -143,6 +142,18 @@ jobs:
         package: './output/${{ env.ARTIFACT_NAME }}'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
+    - name: 'Azure login'
+      uses: Azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: 'Azure keyvault'
+      uses: Azure/get-keyvault-secrets@v1
+      with: 
+        keyvault: "kv-test-markus"
+        secrets: 'TestSecret1, TestSecret2'
+      id: getKeyVaultSecrets
+      
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
