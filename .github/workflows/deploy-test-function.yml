@@ -28,11 +28,12 @@ env:
   PROJECT_PATH: '.\TestOutboundIp\TestOutboundIp.csproj'
   ARTIFACT_NAME: "test-function"
 on:
-  push:
-    branches:
-      - "master"
-      - '!master'
-  workflow_dispatch:
+  push
+  #push:
+  #  branches:
+  #    - "master"
+  #    - '!master'
+  #workflow_dispatch:
 
 permissions:
   contents: read
