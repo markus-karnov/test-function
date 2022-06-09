@@ -75,14 +75,6 @@ jobs:
         name: ${{ env.AZURE_ARTIFACT_NAME }}
         path: './output/${{ env.ARTIFACT_NAME }}'
 
-    - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
-      id: fa
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: './output/${{ env.ARTIFACT_NAME }}'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-
     - name: 'Azure login'
       uses: Azure/login@v1
       with:
@@ -95,6 +87,13 @@ jobs:
         secrets: 'TestSecret1, TestSecret2'
       id: getKeyVaultSecrets
 
+    - name: 'Run Azure Functions Action'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: './output/${{ env.ARTIFACT_NAME }}'
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
@@ -138,14 +137,6 @@ jobs:
         name: ${{ env.ARTIFACT_NAME }}
         path: './output/${{ env.ARTIFACT_NAME }}'
 
-    - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
-      id: fa
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: './output/${{ env.ARTIFACT_NAME }}'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-
     - name: 'Azure login'
       uses: Azure/login@v1
       with:
@@ -157,6 +148,14 @@ jobs:
         keyvault: ${{ env.AZURE_KEYVAULT }}
         secrets: 'TestSecret1, TestSecret2'
       id: getKeyVaultSecrets
+
+    - name: 'Run Azure Functions Action'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: './output/${{ env.ARTIFACT_NAME }}'
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
