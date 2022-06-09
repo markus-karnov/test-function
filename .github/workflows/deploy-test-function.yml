@@ -32,7 +32,7 @@ on:
     branches:
       - "master"
       - '!master'
-  workflow_dispatch:
+  # workflow_dispatch: # to enable manual triggering
 
 permissions:
   contents: read
