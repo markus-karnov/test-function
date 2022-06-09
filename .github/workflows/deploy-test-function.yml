@@ -31,6 +31,7 @@ on:
   push:
     branches:
       - "master"
+      - '!master'
   workflow_dispatch:
 
 permissions:
@@ -126,6 +127,8 @@ jobs:
     needs: job_CD_dev
     runs-on: windows-latest
     environment: prod
+    if: github.ref == 'refs/heads/masterX'
+
     steps: 
 
     - name: Download artifact
@@ -153,7 +156,7 @@ jobs:
         keyvault: "kv-test-markus"
         secrets: 'TestSecret1, TestSecret2'
       id: getKeyVaultSecrets
-      
+
     - name: 'Set Functions Config'
       uses: azure/appservice-settings@v1
       with:
